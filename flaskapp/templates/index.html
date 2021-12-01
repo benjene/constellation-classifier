@@ -1,0 +1,183 @@
+<html>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/jquery-3.6.0.js"></script>
+    <script type="text/javascript">
+    var canvas, ctx, flag = false,
+        prevX = 0,
+        currX = 0,
+        prevY = 0,
+        currY = 0,
+        dot_flag = false;
+
+        var draw_count = 0;
+        var x = "black",
+        y = 30;
+
+    
+    function init() {
+        canvas = document.getElementById('can');
+        ctx = canvas.getContext("2d");
+        w = canvas.width;
+        h = canvas.height;
+    
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, w, h);
+
+        canvas.addEventListener("mousemove", function (e) {
+            findxy('move', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+            findxy('down', e)
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+            findxy('up', e)
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+            findxy('out', e)
+        }, false);
+    }
+    
+    
+    function draw() {
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    
+    function erase() {
+        ctx.clearRect(0, 0, w, h);
+        document.getElementById("canvasimg").style.display = "none";
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, w, h);
+    }
+
+    async function downloadCanvas(el) {
+
+        let cvs = document.getElementById("can");
+        const imageURI = cvs.toDataURL("image/jpg");
+        
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:5000/hook",
+            data:{
+                imageBase64: imageURI
+            },
+            }).done(function(data) {
+            console.log(data.pred);
+            $('#mytext').text("Your Constellation: "+ data.pred)
+        });
+    };
+
+    function changeImg() {
+        var e = document.getElementById("constellation-names");
+        var strUser = e.value;
+        document.getElementById("x").src="src_img/" + strUser + ".png";
+
+    }
+
+    function erase2(){
+        ctx.clearRect(0, 0, w, h);
+        document.getElementById("canvasimg").style.display = "none";
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, w, h);
+        $('#mytext').text("Your Constellation: ")
+
+    }
+
+    
+   
+    function findxy(res, e) {
+        if (res == 'down') {
+            prevX = currX;
+            prevY = currY;
+            currX = e.clientX - canvas.offsetLeft;
+            currY = e.clientY - canvas.offsetTop;
+    
+            flag = true;
+            dot_flag = true;
+            if (dot_flag) {
+                ctx.beginPath();
+                ctx.fillStyle = x;
+                ctx.fillRect(currX, currY, 2, 2);
+                ctx.closePath();
+                dot_flag = false;
+            }
+        }
+        if (res == 'up' || res == "out") {
+            flag = false;
+        }
+        if (res == 'move') {
+            if (flag) {
+                prevX = currX;
+                prevY = currY;
+                currX = e.clientX - canvas.offsetLeft;
+                currY = e.clientY - canvas.offsetTop;
+                draw();
+            }
+        }
+    }
+    </script>
+
+
+<title>CanvaStar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"> 
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+<link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
+<link rel= "stylesheet" type= "text/css" href= "../static/css/style.css">
+
+
+
+    <body onload="init()">
+
+
+        <div class="header">
+            <h1 style="font-family: 'Rock Salt', cursive;
+            font-size: 50px;">Canva<span style="color: #fff;
+                text-shadow:
+                  0 0 7px #fff,
+                  0 0 10px #fff,
+                  0 0 21px #fff,
+                  0 0 42px rgb(226, 25, 92),
+                  0 0 82px rgb(226, 25, 92),
+                  0 0 92px rgb(226, 25, 92),
+                  0 0 102px rgb(226, 25, 92),
+                  0 0 151px rgb(226, 25, 92);
+                  ">Star</span></h1>
+            <p>Find out the faults in your stars!</p>
+        
+          </div>
+
+
+        <div class="stars">
+            <div class="twinkling">
+                <canvas id="can" width="400" height="400" ></canvas>
+        <!--<p id="count_display" style="font-size: 60px; font: 'Times New Roman'; float:right;">0</p> -->
+        <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
+
+    </div>
+</div>
+
+<h2 id="draw"> Draw Here: </h2>
+
+<br>
+<br>
+
+<input type="button" class="predict"  id="myclick"  value="Get Prediction!"onclick="downloadCanvas(this);return false">
+
+<input type="button" class="clear" value="Clear" id="clr" size="23" onclick="erase()">
+
+<input type="button" class="try" value="Try Again" id="clr" size="23" onclick="erase2()">
+
+<br>
+
+<h1 id="mytext"> Your Constellation: </h1>
+
+
+       
+    </body>
+    </html>
